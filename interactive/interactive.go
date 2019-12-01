@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/pipiBRH/E-ssh/sshclient"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -46,7 +47,9 @@ func InteractiveWithStdin(profile, region, jumper, user string) {
 			log.Fatal(err)
 		}
 
-		key, err := shellPrint("Choose a bastion...", "Please enter numeric choice: ", ec2Info)
+		filteInfo := collectEC2Info(ec2Info, true)
+
+		key, err := shellPrint("Choose a bastion...", "Please enter numeric choice: ", filteInfo)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -61,7 +64,9 @@ func InteractiveWithStdin(profile, region, jumper, user string) {
 		log.Fatal(err)
 	}
 
-	key, err := shellPrint("Choose a target host...", "Please enter numeric choice: ", ec2Info)
+	filteInfo := collectEC2Info(ec2Info, false)
+
+	key, err := shellPrint("Choose a target host...", "Please enter numeric choice: ", filteInfo)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,19 +79,19 @@ func InteractiveWithStdin(profile, region, jumper, user string) {
 	}
 }
 
-func shellPrint(prefix, suffix string, ec2Info []*ec2.Reservation) (int, error) {
-	reader := bufio.NewReader(os.Stdin)
+func shellPrint(prefix, suffix string, ec2Info [][]string) (int, error) {
 	fmt.Println(prefix)
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"ID", "Dns", "IP", "Name"})
 
-	for key, ec2 := range ec2Info {
-		ip := *ec2.Instances[0].PublicIpAddress
-		dns := *ec2.Instances[0].PublicDnsName
-		name := *ec2.Instances[0].Tags[0].Value
-		fmt.Printf("(%v) %v, %v, %v\n", key, dns, ip, name)
+	for _, v := range ec2Info {
+		table.Append(v)
 	}
+	table.Render()
 
 	fmt.Print(suffix)
 
+	reader := bufio.NewReader(os.Stdin)
 	stdin, err := reader.ReadString('\n')
 	if err != nil {
 		return 0, err
@@ -98,4 +103,33 @@ func shellPrint(prefix, suffix string, ec2Info []*ec2.Reservation) (int, error) 
 	}
 
 	return numeric, nil
+}
+
+func collectEC2Info(ec2Info []*ec2.Reservation, public bool) [][]string {
+	var result [][]string
+	for key, ec2 := range ec2Info {
+		var ip, dns string
+		if public {
+			ip = *ec2.Instances[0].PrivateIpAddress
+			dns = *ec2.Instances[0].PrivateDnsName
+
+		} else {
+			ip = *ec2.Instances[0].PrivateIpAddress
+			dns = *ec2.Instances[0].PrivateDnsName
+		}
+		name := findTagsElementByKey(ec2.Instances[0].Tags)
+		result = append(result, []string{strconv.FormatInt(int64(key), 10), dns, ip, name})
+	}
+	return result
+}
+
+func findTagsElementByKey(tags []*ec2.Tag) string {
+	var name string
+	for _, t := range tags {
+		if *t.Key == "Name" {
+			name = *t.Value
+			break
+		}
+	}
+	return name
 }

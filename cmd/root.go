@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	interactive "github.com/pipiBRH/E-ssh/interactivet"
+	"github.com/pipiBRH/E-ssh/interactive"
 
 	"github.com/spf13/cobra"
 )
