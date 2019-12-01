@@ -8,22 +8,15 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "E-ssh",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
-	},
+	Use:   "E-ssh -j <bastion> -r <aws region> -p <profile>",
+	Short: "Easy way to choose instance that you want to access through bastion.",
+	Run:   func(cmd *cobra.Command, args []string) {},
 }
 
 var (
-	jumper string
-	region string
+	Jumper  string
+	Region  string
+	Profile string
 )
 
 func Execute() {
@@ -34,6 +27,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&jumper, "jumper", "j", "", "Specify a host as jumper.")
-	rootCmd.Flags().StringVarP(&region, "region", "r", "", "The region to use. Overrides config/env settings.")
+	rootCmd.Flags().StringVarP(&Profile, "profile", "p", "", "Use a specific profile from your credential file.")
+	rootCmd.Flags().StringVarP(&Jumper, "jumper", "j", "", "Use a specific host as jumper.")
+	rootCmd.Flags().StringVarP(&Region, "region", "r", "", "The region to use. Overrides config/env settings.")
 }
