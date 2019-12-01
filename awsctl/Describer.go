@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-func Ec2Lookup(opt *session.Options, input *ec2.DescribeInstancesInput) ([]*ec2.Reservation, error) {
+func DescribeEC2(opt *session.Options, input *ec2.DescribeInstancesInput) ([]*ec2.Reservation, error) {
 	sess, err := session.NewSessionWithOptions(*opt)
 	if err != nil {
 		log.Fatal(err)
@@ -20,5 +20,4 @@ func Ec2Lookup(opt *session.Options, input *ec2.DescribeInstancesInput) ([]*ec2.
 		return nil, err
 	}
 	return result.Reservations, nil
-	// fmt.Println(*result.Reservations[0].Instances[0].PublicIpAddress)
 }
