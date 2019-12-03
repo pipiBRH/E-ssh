@@ -10,7 +10,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "E-ssh",
+	Use:   "e-ssh",
 	Short: "Easy way to choose instance that you want to access through bastion.",
 	Run: func(cmd *cobra.Command, args []string) {
 		interactive.InteractiveWithStdin(Profile, Region, Jumper, User)
